@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.post("/api/stock/update", async (req, res) => {
+app.post("/api/crypto/update", async (req, res) => {
   try {
     const { symbol, interval } = req.body;
 
@@ -23,7 +23,7 @@ app.post("/api/stock/update", async (req, res) => {
     }
 
     const task = {
-      stockType: "stock_price_update",
+      stockType: "crypto_price_update",
       payload: {
         symbol: symbol.toUpperCase(),
         interval: interval,
