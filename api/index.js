@@ -1,10 +1,13 @@
 import express from "express";
-import { client, pushToTaskQueue } from "../queue/redisQueue";
+import { clientStart, pushToTaskQueue } from "../queue/redisQueue.js";
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+
+await clientStart();
+console.log("Redis server running...");
 
 app.get("/", (req, res) => {
   res.status(201).json({
@@ -14,16 +17,17 @@ app.get("/", (req, res) => {
 
 app.post("/api/crypto/update", async (req, res) => {
   try {
-    const { symbol, interval } = req.body;
+    const { type, payload } = req.body;
+    const { symbol, interval } = payload;
 
-    if (!symbol || !interval) {
+    if (type !== "crypto_price_update" || !payload || !symbol || !interval) {
       return res.status(403).json({
         msg: `Please provide required details.`,
       });
     }
 
     const task = {
-      stockType: "crypto_price_update",
+      type: type,
       payload: {
         symbol: symbol.toUpperCase(),
         interval: interval,
@@ -38,9 +42,10 @@ app.post("/api/crypto/update", async (req, res) => {
     });
   } catch (err) {
     console.error(`Error while pushing to queue.`);
+    return res.status(500).json({ msg: `Internal server error.` });
   }
 });
 
 app.listen(port, () => {
-  console.log(`api server running on 3000`);
+  console.log(`api server running on ${port}`);
 });
