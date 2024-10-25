@@ -2,11 +2,18 @@
   "name": "queue-engine-socket",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"node ./api/index.js\" \"node ./engine/engine.js\" \"node ./web-socket/socketServer.js\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "redis": "^4.7.0",
+    "ws": "^8.18.0"
+  }
 }
