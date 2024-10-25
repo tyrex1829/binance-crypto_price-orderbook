@@ -1,6 +1,5 @@
 import { WebSocket, WebSocketServer } from "ws";
-import client from "redis";
-import { popFromDoneTaskQueue } from "../queue/redisQueue";
+import { clientStart, popFromDoneTaskQueue } from "../queue/redisQueue.js";
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -26,9 +25,15 @@ function sendToEachClient(message) {
   });
 }
 
+await clientStart().catch((err) => {
+  console.error(`Failed to connect to Redis: ${err}`);
+  process.exit(1);
+});
+console.log("Redis server running...");
+
 async function getCompletedTasks() {
   popFromDoneTaskQueue((doneTask) => {
-    console.log(`Sending done tasks to clients: ${doneTask}`);
+    console.log(`Sending done tasks to clients: ${JSON.stringify(doneTask)}`);
     sendToEachClient(doneTask);
   });
 }
