@@ -7,7 +7,7 @@ const port = 3000;
 app.use(express.json());
 
 await clientStart();
-console.log("Redis server running...");
+console.log("Redis server running in api...");
 
 app.get("/", (req, res) => {
   res.status(201).json({
@@ -41,7 +41,7 @@ app.post("/api/crypto/update", async (req, res) => {
       task,
     });
   } catch (err) {
-    console.error(`Error while pushing to queue.`);
+    console.error(`Error while pushing to queue from api: ${err}`);
     return res.status(500).json({ msg: `Internal server error.` });
   }
 });
