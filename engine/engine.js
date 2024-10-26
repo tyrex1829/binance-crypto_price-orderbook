@@ -48,9 +48,11 @@ async function doTheTask(task) {
     };
 
     await pushToDoneTaskQueue(doneTask);
-    console.log(`Successfully performed task and pushed to done queue`);
+    console.log(
+      `Successfully performed task and pushed to done queue from engine`
+    );
   } catch (error) {
-    console.error(`Error while performing the task`);
+    console.error(`Error while performing the task in engine`);
   }
 }
 
@@ -71,9 +73,9 @@ async function startEngine() {
 }
 
 await clientStart().catch((err) => {
-  console.error("Failed to connect to Redis:", err);
+  console.error("Failed to connect to Redis in engine:", err);
   process.exit(1);
 });
-console.log(`Redis server running...`);
+console.log(`Redis server running in engine...`);
 
 startEngine();
