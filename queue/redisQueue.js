@@ -5,12 +5,12 @@ const client = createClient();
 async function clientStart() {
   try {
     if (!client.isOpen) {
-      console.log(`Connecting to redis...`);
+      console.log(`Connecting to redis in queues...`);
       await client.connect();
       console.log(`Connected to redis`);
     }
   } catch (error) {
-    console.error(`Error while connecting to redis: ${error}`);
+    console.error(`Error while connecting to redis in queues: ${error}`);
     throw error;
   }
 }
@@ -25,9 +25,11 @@ const pushToTaskQueue = async (job) => {
   try {
     await ensureConnected();
     await client.rPush("TaskQueue", JSON.stringify(job));
-    console.log(`Successfully pushed to task queue: ${JSON.stringify(job)}`);
+    console.log(
+      `Successfully pushed to task queue in queues: ${JSON.stringify(job)}`
+    );
   } catch (error) {
-    console.error(`Error while pushing to task queue: ${error}`);
+    console.error(`Error while pushing to task queue in queues: ${error}`);
   }
 };
 
@@ -81,14 +83,28 @@ const pushToDoneTaskQueue = async (doneJob) => {
 const popFromDoneTaskQueue = async (cb) => {
   try {
     await ensureConnected();
-    console.log(`Waiting for job in DoneTaskQueue...`);
-    const taskData = await client.brPop("DoneTaskQueue", 0);
-    if (taskData && taskData.length === 2) {
-      const [queueName, job] = taskData;
-      if (job) {
-        console.log(`Got the job from DoneTaskQueue: ${job}`);
-        const parsedJob = JSON.parse(job);
-        await cb(parsedJob);
+    while (true) {
+      console.log(`Waiting for job in DoneTaskQueue...`);
+      const taskData = await client.brPop("DoneTaskQueue", 0);
+      console.log(`blPop response: ${JSON.stringify(taskData, null, 2)}`);
+
+      if (taskData && taskData.key && taskData.element) {
+        const job = taskData.element;
+        try {
+          console.log(`Queue name: ${taskData.key} & job: ${job}`);
+          const parsedJob = JSON.parse(job);
+          await cb(parsedJob);
+        } catch (err) {
+          console.error(`Error parsing job from doneTaskQueue: ${err}`);
+        }
+      } else {
+        console.log(
+          `No valid task data returned from blPop, taskData: ${JSON.stringify(
+            taskData,
+            null,
+            2
+          )}`
+        );
       }
     }
   } catch (error) {
