@@ -6,8 +6,13 @@ const port = 3000;
 
 app.use(express.json());
 
-await clientStart();
-console.log("Redis server running in api...");
+try {
+  await clientStart();
+  console.log("Redis server running in api...");
+} catch (error) {
+  console.error(`Failed to connected to with redis client`);
+  process.exit(1);
+}
 
 app.get("/", (req, res) => {
   res.status(201).json({
